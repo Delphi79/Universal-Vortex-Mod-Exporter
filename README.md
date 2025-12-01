@@ -40,5 +40,5 @@ No installation. No admin rights. No changes to Vortex.
 It does **NOT** download or back up mod files themselves  
 It does **NOT** alter your Vortex configuration  
 
-It only exports a **list** — safe, read-only operation 👍  
+It only exports a **list** - safe, read-only operation 👍  
 
