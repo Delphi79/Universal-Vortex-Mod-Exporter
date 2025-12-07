@@ -5,7 +5,6 @@ A utility that exports the installed-mod list from Vortex into a clean, structur
 This tool reads the latest Vortex state snapshot and produces:
 
 - HTML export with clickable download links
-- CSV export for spreadsheets and databases
 - JSON export for automation and scripting
 - Excel (XLSX) export with hyperlink support
 
