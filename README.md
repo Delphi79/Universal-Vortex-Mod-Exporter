@@ -11,9 +11,20 @@ This tool reads the latest Vortex state snapshot and produces:
 You may export either:
 
 - All installed mods  
-- Enabled mods only
+- Enabled mods only  
 
 Supports all Vortex-managed games with readable display names and sorted load order (where available).
+
+---
+
+## Why Use This?
+
+UVME is intended for situations where the in-app Vortex view is not ideal, such as:
+
+- Sharing a full mod list for troubleshooting or support
+- Documenting a setup before reinstalling or migrating systems
+- Comparing load orders between profiles or machines
+- Keeping a long-term, readable record of a modded setup
 
 ---
 
@@ -26,6 +37,22 @@ Supports all Vortex-managed games with readable display names and sorted load or
 5. Choose your export format.
 
 The tool performs a read-only export and does not interact with Vortex directly while running.
+
+---
+
+## OPTIONAL: Run UVME from Inside Vortex
+
+UVME runs perfectly on its own.  
+However, it can also be added as a launchable tool inside Vortex for convenience.
+
+### To add UVME as a Vortex tool:
+
+1. Open **Vortex → Dashboard → Add Tool → New…**
+2. Set **Target** to your UVME folder → `Launcher.bat`
+3. Set **Start In** to the same folder
+4. Save
+
+You can now launch UVME with one click directly from inside Vortex.
 
 ---
 
@@ -47,7 +74,14 @@ Only a structured list of mods is exported for documentation, troubleshooting, s
 
 ---
 
+## Nexus Mods Page
+
+UVME is also available on Nexus Mods:
+
+https://www.nexusmods.com/fallout4/mods/98790
+
+---
+
 ## License
 
 Free for personal use and distribution. No warranties or guarantees are provided.
-
