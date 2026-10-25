@@ -284,11 +284,16 @@ function Get-UVMEGameOverview {
             }
 
             # Raw attribute values from Vortex
+            $rawCustom  = $null
             $rawLogical = $null
             $rawModName = $null
             $rawName    = $null
 
             if ($attrs) {
+                if ($attrs.customFileName) {
+                    $tmp = Get-UVMEString $attrs.customFileName
+                    if ($tmp.Length -gt 0) { $rawCustom = $tmp }
+                }
                 if ($attrs.logicalFileName) {
                     $tmp = Get-UVMEString $attrs.logicalFileName
                     if ($tmp.Length -gt 0) { $rawLogical = $tmp }
@@ -304,9 +309,12 @@ function Get-UVMEGameOverview {
             }
 
             # --- Vortex-like display name selection ---
-
-            if ($rawLogical) {
-                # 1) Prefer the same field Vortex shows in the Mods list
+            if ($rawCustom) {
+                # 1) Prefer the same field Vortex shows in the Mods list (1)
+                $modName = Get-UVMEString $rawCustom
+            }
+            elseif ($rawLogical) {
+                # 1) Prefer the same field Vortex shows in the Mods list (2)
                 $modName = Get-UVMEString $rawLogical
             }
             elseif ($rawModName) {
@@ -339,6 +347,7 @@ function Get-UVMEGameOverview {
                 }
             }
 
+
             # BaseModName used for grouping: prefer mod/page name, then final display name
             $baseName = Get-UVMEString $rawModName
             if (-not $baseName -or $baseName.Length -eq 0) {
@@ -367,6 +376,16 @@ function Get-UVMEGameOverview {
                 $modVersion = $globalVersion
             } else {
                 $modVersion = "[no version in Vortex]"
+            }
+
+            # Collection
+            $collection = $null
+
+            if ($attrs) {
+                if ($attrs.variant) {
+                    $tmp = Get-UVMEString $attrs.variant
+                    if ($tmp.Length -gt 0) { $collection = $tmp} 
+                }
             }
 
             # Source + homepage + Nexus ID
@@ -402,6 +421,7 @@ function Get-UVMEGameOverview {
                 Enabled        = $enabled
                 LoadOrder      = [string]$deployIndex
                 Source         = $source
+                Collection     = $collection
                 Homepage       = $homepage
                 FileVersion    = $fileVersion
                 GlobalVersion  = $globalVersion
@@ -580,6 +600,7 @@ function Normalize-UVMEPartMods {
             Enabled        = [bool]$anyEnabled
             LoadOrder      = [string]$minLoad
             Source         = $representative.Source
+            Collection     = $representative.Collection
             Homepage       = $aggHomepage
             FileVersion    = $representative.FileVersion
             GlobalVersion  = $representative.GlobalVersion
@@ -1238,7 +1259,7 @@ $timestamp = Get-Date -Format "yyyyMMdd_HHmmss"
 $fileBase  = "${gameLabel}_${scopeLabel}_${timestamp}"
 
 $sortedMods  = $modsToExport | Sort-Object GameName, {[int]$_.LoadOrder}, ModName
-$selectProps = "GameName","ModName","ModVersion","Enabled","LoadOrder","Source","Homepage"
+$selectProps = "GameName","ModName","ModVersion","Enabled","LoadOrder","Source","Collection","Homepage"
 
 switch ($formatChoice) {
     "1" {
@@ -1257,7 +1278,7 @@ switch ($formatChoice) {
         $workbook      = $excel.Workbooks.Add()
         $sheet         = $workbook.Worksheets.Item(1)
 
-        $headers = @("Game","Mod Name","Version","Enabled","Load Order","Source","Homepage")
+        $headers = @("Game","Mod Name","Version","Enabled","Load Order","Source","Collection","Homepage")
 
         for ($c = 0; $c -lt $headers.Count; $c++) {
             $sheet.Cells.Item(1, $c + 1).Value2 = $headers[$c]
@@ -1274,13 +1295,15 @@ switch ($formatChoice) {
             $sourceText = if ($m.Source -is [string] -and $m.Source.Trim()) { $m.Source } else { "no vortex record" }
             $sheet.Cells.Item($row, 6).Value2 = [string]$sourceText
 
+            $sheet.Cells.Item($row, 7).Value2 = [string]$m.Collection
+
             $url = $m.Homepage
             if (Test-UVMEIsUrl $url) {
-                $cell = $sheet.Cells.Item($row, 7)
+                $cell = $sheet.Cells.Item($row, 8)
                 $cell.Value2 = "Download"
                 $sheet.Hyperlinks.Add($cell, $url, "", "", "Download") | Out-Null
             } else {
-                $sheet.Cells.Item($row, 7).Value2 = [string]("No link in Vortex snapshot")
+                $sheet.Cells.Item($row, 8).Value2 = [string]("No link in Vortex snapshot")
             }
 
             $row++
@@ -1321,6 +1344,8 @@ switch ($formatChoice) {
                 $sourceText = if ($m.Source -is [string] -and $m.Source.Trim()) { $m.Source } else { "no vortex record" }
                 $source     = [System.Net.WebUtility]::HtmlEncode([string]$sourceText)
 
+                $collection = [System.Net.WebUtility]::HtmlEncode([string]$m.Collection)
+
                 $url = [string]$m.Homepage
                 if (Test-UVMEIsUrl $url) {
                     $urlEsc       = [System.Net.WebUtility]::HtmlEncode($url)
@@ -1336,6 +1361,7 @@ switch ($formatChoice) {
                     <td>$enabled</td>
                     <td>$loadOrder</td>
                     <td>$source</td>
+                    <td>$collection</td>
                     <td>$homepageCell</td>
                 </tr>"
             }
@@ -1351,7 +1377,8 @@ switch ($formatChoice) {
                    <th class=""sortable"" data-col=""3"" data-type=""text"">Enabled (sort)</th>
                    <th class=""sortable"" data-col=""4"" data-type=""number"">Load Order (sort)</th>
                    <th class=""sortable"" data-col=""5"" data-type=""text"">Source (sort)</th>
-                   <th class=""sortable"" data-col=""6"" data-type=""text"">Homepage (sort)</th>
+                   <th class=""sortable"" data-col=""6"" data-type=""text"">Collection (sort)</th>
+                   <th class=""sortable"" data-col=""7"" data-type=""text"">Homepage (sort)</th>
                  </tr>
                </thead>
                <tbody>
